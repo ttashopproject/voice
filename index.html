@@ -3,35 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini 語音助手 - GitHub 版</title>
+    <title>語音助手 - 精簡版</title>
     <style>
-        body { font-family: -apple-system, sans-serif; padding: 20px; background: #f4f7f9; display: flex; justify-content: center; height: 100vh; margin: 0; box-sizing: border-box; }
-        .container { width: 100%; max-width: 700px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-        h2 { color: #1a73e8; margin-bottom: 20px; font-size: 22px; }
-        textarea { flex: 1; width: 100%; padding: 20px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 18px; line-height: 1.6; resize: none; box-sizing: border-box; outline: none; transition: border-color 0.3s; }
-        textarea:focus { border-color: #1a73e8; }
-        .controls { display: flex; gap: 12px; margin-top: 20px; }
-        button { flex: 1; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; }
-        #startBtn { background: #34a853; color: white; }
+        /* 限定整體網頁背景 */
+        body { 
+            font-family: -apple-system, sans-serif; 
+            margin: 0; 
+            padding: 10px; 
+            background: #f0f2f5; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start;
+        }
+
+        /* 限定助手容器的大小 */
+        .container { 
+            width: 350px; /* 固定寬度 */
+            height: 550px; /* 固定高度 */
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15); 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; /* 防止內容溢出 */
+        }
+
+        h2 { 
+            color: #1a73e8; 
+            margin: 0 0 10px 0; 
+            font-size: 18px; 
+            text-align: center;
+        }
+
+        textarea { 
+            flex: 1; 
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            line-height: 1.5; 
+            resize: none; 
+            box-sizing: border-box; 
+            outline: none;
+        }
+
+        .controls { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 8px; 
+            margin-top: 15px; 
+        }
+
+        button { 
+            padding: 10px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 14px; 
+        }
+
+        #startBtn { background: #34a853; color: white; grid-column: span 2; }
         #startBtn.recording { background: #ea4335; animation: pulse 2s infinite; }
         #copyBtn { background: #1a73e8; color: white; }
-        #clearBtn { background: #f1f3f4; color: #3c4043; flex: 0.4; }
-        .status { font-size: 14px; color: #70757a; margin-top: 15px; text-align: center; font-weight: 500; }
+        #clearBtn { background: #dadce0; color: #3c4043; }
+
+        .status { 
+            font-size: 12px; 
+            color: #70757a; 
+            margin-top: 10px; 
+            text-align: center; 
+            height: 15px;
+        }
+
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 <body onclick="autoStart()">
 
 <div class="container">
-    <h2>🎙️ 專屬語音聽寫助手</h2>
-    <textarea id="output" placeholder="點擊頁面任何位置即可開始錄音..."></textarea>
+    <h2>🎙️ 語音聽寫助手</h2>
+    <textarea id="output" placeholder="點擊此處開始說話..."></textarea>
     
     <div class="controls">
         <button id="startBtn">🔴 開始錄音</button>
-        <button id="copyBtn">📋 複製內容</button>
+        <button id="copyBtn">📋 複製</button>
         <button id="clearBtn">🗑️ 清空</button>
     </div>
-    <div id="statusText" class="status">狀態：等待啟動（請先點擊頁面）</div>
+    <div id="statusText" class="status">等待啟動...</div>
 </div>
 
 <script>
@@ -53,19 +114,17 @@
             forceStopped = false;
             startBtn.innerHTML = '⏹️ 停止錄音';
             startBtn.classList.add('recording');
-            statusText.textContent = '🟢 正在錄音：請隨意停頓思考';
-            statusText.style.color = "#34a853";
+            statusText.textContent = '🟢 正在監聽中...';
         };
 
         recognition.onend = () => {
             if (!forceStopped && isRecording) {
-                recognition.start(); // 自動重啟實現「永不中斷」
+                recognition.start();
             } else {
                 isRecording = false;
                 startBtn.innerHTML = '🔴 開始錄音';
                 startBtn.classList.remove('recording');
                 statusText.textContent = '⚪ 錄音已停止';
-                statusText.style.color = "#70757a";
             }
         };
 
@@ -106,20 +165,15 @@
         e.stopPropagation();
         output.select();
         document.execCommand('copy');
-        const oldText = statusText.textContent;
-        statusText.textContent = '✅ 已成功複製到剪貼簿！';
-        setTimeout(() => { statusText.textContent = oldText; }, 2000);
+        statusText.textContent = '✅ 已複製！';
+        setTimeout(() => { if(isRecording) statusText.textContent = '🟢 正在監聽中...'; }, 2000);
     };
 
     document.getElementById('clearBtn').onclick = (e) => {
         e.stopPropagation();
-        if(output.value && confirm("確定要清空所有內容嗎？")) {
-            output.value = '';
-            output.focus();
-        }
+        if(output.value && confirm("清空文字？")) output.value = '';
     };
 
-    // 頁面加載後自動 Focus 在輸入框
     window.onload = () => { output.focus(); };
 </script>
 
